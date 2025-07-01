@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flatpak/flatpak-builder/main/data/flatpak-manifest.schema.json
+
+# Credits to nyx! She's an actual genius
+
+id: work.starlightnet.sleepyhead
+command: work.starlightnet.sleepyhead
+runtime: org.freedesktop.Platform
+runtime-version: "24.08"
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.ziglang
+
+finish-args:
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --socket=pulseaudio
+  - --device=all
+
+modules:
+  - name: just
+    buildsystem: simple
+    sources:
+      - type: archive
+        url: https://github.com/casey/just/releases/download/1.41.0/just-1.41.0-x86_64-unknown-linux-musl.tar.gz
+        sha256: 9d794c80727b28f549e9237ec0c01870794a36afeadea0864b5c2dbb32dd1fdb
+        dest: just/
+        strip-components: 0
+    build-commands:
+      - install -D just/just /app/bin/just
+
+  - name: sleepyhead
+    buildsystem: simple
+    build-commands:
+      - rm build.zig.zon
+      - PATH=$PATH:/usr/lib/sdk/ziglang/ just release-linux
+      - install -D distribution/sleepyhead /app/bin/work.starlightnet.sleepyhead
+      - install -D distribution/package.bsk /app/bin/package.bsk
+      - install -D distribution/game.desktop /app/share/applications/work.starlightnet.sleepyhead.desktop
+      - install -D distribution/game.svg /app/share/icons/work.starlightnet.sleepyhead.svg
+
+    sources:
+      - type: git
+        url: https://forge.starlightnet.work/nelson/socks.git
+        branch: main
